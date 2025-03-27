@@ -86,11 +86,6 @@ export const compileMockContractPaths = async (hre: HardhatRuntimeEnvironment) =
 // 	}
 // }
 
-// task(TASK_TEST, 'Deploy fhenix mock contracts into test hardhat runner').setAction(async ({}, hre: HardhatRuntimeEnvironment, runSuper) => {
-// 	await injectFhenixMocks(hre)
-// 	return runSuper()
-// })
-
 // task(TASK_NODE, 'Deploy fhenix mock contracts into standalone hardhat node').setAction(async ({}, hre: HardhatRuntimeEnvironment, runSuper) => {
 // 	await injectFhenixMocks(hre)
 // 	return runSuper()

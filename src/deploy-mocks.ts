@@ -2,8 +2,8 @@ import { task } from 'hardhat/config'
 import { MockZkVerifier, MockQueryDecrypter, TaskManager, ACL } from '../typechain-types'
 import { hardhatSetCode } from './utils'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { compileMockContractPaths } from './compile-mock-contracts'
 import { TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS } from './addresses'
+import { TASK_TEST } from 'hardhat/builtin-tasks/task-names'
 
 const deployMockTaskManager = async (hre: HardhatRuntimeEnvironment) => {
 	const [signer] = await hre.ethers.getSigners()
@@ -100,7 +100,7 @@ const setTaskManagerACL = async (taskManager: TaskManager, acl: ACL) => {
 	console.log('TaskManager ACL set')
 }
 
-task('deploy-mocks', 'Deploys the mock contracts on the Hardhat network').setAction(async (taskArgs, hre) => {
+const deployMocks = async (hre: HardhatRuntimeEnvironment) => {
 	console.log('Deploy Mocks On Hardhat... \n')
 	// await compileMockContractPaths(hre)
 
@@ -124,4 +124,13 @@ task('deploy-mocks', 'Deploys the mock contracts on the Hardhat network').setAct
 	const queryDecrypter = await deployMockQueryDecrypter(hre, acl)
 
 	console.log('Done!')
+}
+
+task('deploy-mocks', 'Deploys the mock contracts on the Hardhat network').setAction(async (taskArgs, hre) => {
+	await deployMocks(hre)
+})
+
+task(TASK_TEST, 'Deploy mock contracts on hardhat').setAction(async ({}, hre: HardhatRuntimeEnvironment, runSuper) => {
+	await deployMocks(hre)
+	return runSuper()
 })

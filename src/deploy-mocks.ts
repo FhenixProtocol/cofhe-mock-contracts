@@ -1,7 +1,9 @@
 import { task } from 'hardhat/config'
 import { MockZkVerifier, MockQueryDecrypter, TaskManager, ACL } from '../typechain-types'
-import { hardhatSetCode, TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS } from './utils'
+import { hardhatSetCode } from './utils'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { compileMockContractPaths } from './compile-mock-contracts'
+import { TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS } from './addresses'
 
 const deployMockTaskManager = async (hre: HardhatRuntimeEnvironment) => {
 	const [signer] = await hre.ethers.getSigners()
@@ -98,8 +100,9 @@ const setTaskManagerACL = async (taskManager: TaskManager, acl: ACL) => {
 	console.log('TaskManager ACL set')
 }
 
-task('deploy-mocks', 'Runs a script on the Anvil network').setAction(async (taskArgs, hre) => {
-	console.log('Deploy Mocks On Anvil... \n')
+task('deploy-mocks', 'Deploys the mock contracts on the Hardhat network').setAction(async (taskArgs, hre) => {
+	console.log('Deploy Mocks On Hardhat... \n')
+	// await compileMockContractPaths(hre)
 
 	const network = hre.network.name
 	if (network !== 'hardhat') {
@@ -108,6 +111,9 @@ task('deploy-mocks', 'Runs a script on the Anvil network').setAction(async (task
 	}
 
 	await hre.run('compile')
+
+	const artifactPaths = await hre.artifacts.getArtifactPaths()
+	console.log('artifactPaths', artifactPaths)
 
 	const taskManager = await deployMockTaskManager(hre)
 	const acl = await deployMockACL(hre)

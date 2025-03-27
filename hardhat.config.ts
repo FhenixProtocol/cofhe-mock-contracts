@@ -2,7 +2,7 @@ import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
 import '@nomicfoundation/hardhat-ethers'
 
-import './tasks'
+import './src/deploy-mocks'
 
 const config: HardhatUserConfig = {
 	solidity: {

@@ -3,8 +3,7 @@
 pragma solidity >=0.8.19 <0.9.0;
 
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /**
  * @dev Permission body that must be passed to a contract to allow access to sensitive data.
@@ -78,18 +77,10 @@ interface IPermissionCustomIdValidator {
     function disabled(address issuer, uint256 id) external view returns (bool);
 }
 
-contract PermissionedUpgradeable is Initializable, EIP712Upgradeable {
+contract MockPermissioned is EIP712 {
     using PermissionUtils for Permission;
 
-    function __PermissionedUpgradeable_init() internal onlyInitializing {
-        __EIP712_init("ACL", "1");
-        __PermissionedUpgradeable_init_unchained();
-    }
-
-    function __PermissionedUpgradeable_init_unchained()
-        internal
-        onlyInitializing
-    {}
+    constructor() EIP712("ACL", "1") {}
 
     /// @dev Emitted when `permission.expiration` is in the past (< block.timestamp)
     error PermissionInvalid_Expired();

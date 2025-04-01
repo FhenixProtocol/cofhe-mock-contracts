@@ -6,14 +6,6 @@
 		"name": "FhenixProtocol",
 		"url": "https://github.com/FhenixProtocol/cofhe-mock-contracts"
 	},
-	"scripts": {
-		"deploy-mocks": "npx hardhat deploy-mocks",
-		"lint": "eslint --config ./.eslintrc.json --ignore-path ./.eslintignore ./**/*.ts",
-		"test": "mocha --exit --recursive --timeout 60000 'test/*.test.ts'",
-		"build": "tsc",
-		"watch": "tsc -w",
-		"prepublishOnly": "npm run build"
-	},
 	"files": [
 		"ACL.sol",
 		"MockCoFHE.sol",
@@ -21,8 +13,7 @@
 		"MockTaskManager.sol",
 		"MockZkVerifier.sol",
 		"Permissioned.sol",
-		"src/",
-		"dist/src"
+		"TestBed.sol"
 	],
 	"keywords": [
 		"blockchain",
@@ -39,18 +30,13 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@openzeppelin/contracts": "^5.0.0",
-		"@openzeppelin/contracts-upgradeable": "^5.0.0",
 		"@fhenixprotocol/cofhe-contracts": "0.0.13",
-		"chalk": "^4.1.2"
+		"@openzeppelin/contracts": "^5.0.0",
+		"@openzeppelin/contracts-upgradeable": "^5.0.0"
 	},
-	"devDependencies": {
-		"@types/mocha": "^9.1.0",
-		"@nomicfoundation/hardhat-ethers": "^3.0.8",
-		"@nomicfoundation/hardhat-toolbox": "^5.0.0",
-		"ethers": "^6.13.5",
-		"hardhat": "^2.22.19",
-		"mocha": "^10.4.0",
-		"ts-node": "^10.8.0"
+	"peerDependencies": {
+		"@fhenixprotocol/cofhe-contracts": "0.0.13",
+		"@openzeppelin/contracts": "^5.0.0",
+		"@openzeppelin/contracts-upgradeable": "^5.0.0"
 	}
 }

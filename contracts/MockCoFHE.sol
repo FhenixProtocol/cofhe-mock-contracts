@@ -26,6 +26,7 @@ abstract contract MockCoFHE {
     // Pulled from TMCommon
     uint256 constant uintTypeMask = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
     uint256 constant triviallyEncryptedMask = type(uint8).max - uintTypeMask; //0x80  1 bit reserved for isTriviallyEncrypted
+    uint256 constant shiftedTypeMask = uintTypeMask << 8; // 0x7f007 bits reserved for uint type in the one before last byte
 
     bool public logOps = true;
 
@@ -47,6 +48,15 @@ abstract contract MockCoFHE {
 
     // Utils
 
+    function getUintTypeFromHash(uint256 hash) internal pure returns (uint8) {
+        return uint8((hash & shiftedTypeMask) >> 8);
+    }
+
+    function getIsBoolTypeFromHash(uint256 hash) internal pure returns (bool) {
+        uint8 inputType = getUintTypeFromHash(hash);
+        return (inputType ^ Utils.EBOOL_TFHE) == 0;
+    }
+
     function strEq(
         string memory _a,
         string memory _b
@@ -62,12 +72,64 @@ abstract contract MockCoFHE {
         return strEq(op, Utils.functionIdToString(fid));
     }
 
+    function sliceString(
+        string memory str,
+        uint start,
+        uint length
+    ) public pure returns (string memory) {
+        bytes memory strBytes = bytes(str);
+        require(start + length <= strBytes.length, "Out of bounds");
+
+        bytes memory result = new bytes(length);
+        for (uint i = 0; i < length; i++) {
+            result[i] = strBytes[start + i];
+        }
+
+        return string(result);
+    }
+
+    function stringifyCtHash(
+        uint256 ctHash
+    ) internal view returns (string memory) {
+        string memory hashStr = Strings.toString(ctHash);
+        uint256 length = bytes(hashStr).length;
+        if (length <= 6) {
+            return hashStr;
+        }
+
+        bool stored = inMockStorage[ctHash];
+        uint256 value = mockStorage[ctHash];
+        bool isBool = getIsBoolTypeFromHash(ctHash);
+
+        string memory valueString = isBool
+            ? (value == 1 ? "true" : "false")
+            : Strings.toString(value);
+
+        string memory truncated = string.concat(
+            "",
+            sliceString(hashStr, 0, 4),
+            "..",
+            sliceString(hashStr, length - 4, 4),
+            "[",
+            stored ? valueString : "EMPTY",
+            "]"
+        );
+
+        return truncated;
+    }
+
     // Storage functions
 
-    function _set(uint256 ctHash, uint256 value) internal {
-        console.log("Mock_set", ctHash, value);
+    function _set(uint256 ctHash, uint256 value, bool log) internal {
         mockStorage[ctHash] = value;
         inMockStorage[ctHash] = true;
+
+        if (log && logOps)
+            console.log("__cofhe__ set             ", stringifyCtHash(ctHash));
+    }
+
+    function _set(uint256 ctHash, uint256 value) internal {
+        _set(ctHash, value, false);
     }
 
     function _set(uint256 ctHash, bool value) internal {
@@ -75,7 +137,6 @@ abstract contract MockCoFHE {
     }
 
     function _get(uint256 ctHash) internal view returns (uint256) {
-        console.log("Mock_get", ctHash, "in storage?", inMockStorage[ctHash]);
         if (!inMockStorage[ctHash]) revert InputNotInMockStorage(ctHash);
         return mockStorage[ctHash];
     }
@@ -98,31 +159,60 @@ abstract contract MockCoFHE {
         uint256 input
     ) internal {
         if (opIs(operation, FunctionId.random)) {
-            if (logOps) console.log("MOCK_random", ctHash);
             _set(ctHash, uint256(blockhash(block.number - 1)));
+
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "__cofhe__ random          ",
+                        stringifyCtHash(ctHash)
+                    )
+                );
             return;
         }
         if (opIs(operation, FunctionId.cast)) {
-            if (logOps) console.log("MOCK_cast", ctHash, _get(input));
             _set(ctHash, _get(input));
+
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "__cofhe__ cast            ",
+                        stringifyCtHash(input),
+                        " => ",
+                        stringifyCtHash(ctHash)
+                    )
+                );
             return;
         }
         if (opIs(operation, FunctionId.not)) {
             bool inputIsTruthy = _get(input) == 1;
-            if (logOps)
-                console.log("MOCK_not", ctHash, inputIsTruthy, !inputIsTruthy);
             _set(ctHash, !inputIsTruthy);
+
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "__cofhe__ not             ",
+                        stringifyCtHash(input),
+                        " => ",
+                        stringifyCtHash(ctHash)
+                    )
+                );
             return;
         }
         if (opIs(operation, FunctionId.square)) {
+            _set(ctHash, _get(input) * _get(input));
+
             if (logOps)
                 console.log(
-                    "MOCK_square",
-                    ctHash,
-                    _get(input),
-                    _get(input) * _get(input)
+                    string.concat(
+                        "__cofhe__ square          ",
+                        stringifyCtHash(input),
+                        " * ",
+                        stringifyCtHash(input),
+                        " => ",
+                        stringifyCtHash(ctHash)
+                    )
                 );
-            _set(ctHash, _get(input) * _get(input));
             return;
         }
         revert InvalidUnaryOperation(operation);
@@ -135,329 +225,331 @@ abstract contract MockCoFHE {
         uint256 input2
     ) internal {
         if (opIs(operation, FunctionId.sub)) {
+            _set(ctHash, _get(input1) - _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_sub",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) - _get(input2))
+                        "__cofhe__ sub             ",
+                        stringifyCtHash(input1),
+                        " - ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) - _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.add)) {
+            _set(ctHash, _get(input1) + _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_add",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) + _get(input2))
+                        "__cofhe__ add             ",
+                        stringifyCtHash(input1),
+                        " + ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) + _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.xor)) {
+            _set(ctHash, _get(input1) ^ _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_xor",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) ^ _get(input2))
+                        "__cofhe__ xor             ",
+                        stringifyCtHash(input1),
+                        " ^ ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) ^ _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.and)) {
+            _set(ctHash, _get(input1) & _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_and",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) & _get(input2))
+                        "__cofhe__ and             ",
+                        stringifyCtHash(input1),
+                        " & ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) & _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.or)) {
+            _set(ctHash, _get(input1) | _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_or",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) | _get(input2))
+                        "__cofhe__ or              ",
+                        stringifyCtHash(input1),
+                        " | ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) | _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.div)) {
+            _set(ctHash, _get(input1) / _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_div",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) / _get(input2))
+                        "__cofhe__ div             ",
+                        stringifyCtHash(input1),
+                        " / ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) / _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.rem)) {
+            _set(ctHash, _get(input1) % _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_rem",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) % _get(input2))
+                        "__cofhe__ rem             ",
+                        stringifyCtHash(input1),
+                        " % ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) % _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.mul)) {
+            _set(ctHash, _get(input1) * _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_mul",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) * _get(input2))
+                        "__cofhe__ mul             ",
+                        stringifyCtHash(input1),
+                        " * ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) * _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.shl)) {
+            _set(ctHash, _get(input1) << _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_shl",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) << _get(input2))
+                        "__cofhe__ shl             ",
+                        stringifyCtHash(input1),
+                        " << ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) << _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.shr)) {
+            _set(ctHash, _get(input1) >> _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_shr",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) >> _get(input2))
+                        "__cofhe__ shr             ",
+                        stringifyCtHash(input1),
+                        " >> ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) >> _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.gte)) {
+            _set(ctHash, _get(input1) >= _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_gte",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) >= _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ gte             ",
+                        stringifyCtHash(input1),
+                        " >= ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) >= _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.lte)) {
+            _set(ctHash, _get(input1) <= _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_lte",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) <= _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ lte             ",
+                        stringifyCtHash(input1),
+                        " <= ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) <= _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.lt)) {
+            _set(ctHash, _get(input1) < _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_lt",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) < _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ lt              ",
+                        stringifyCtHash(input1),
+                        " < ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) < _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.gt)) {
+            _set(ctHash, _get(input1) > _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_gt",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) > _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ gt              ",
+                        stringifyCtHash(input1),
+                        " > ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) > _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.min)) {
             uint256 min = _get(input1) < _get(input2)
                 ? _get(input1)
                 : _get(input2);
+            _set(ctHash, min);
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_min",
-                        " (",
-                        Strings.toString(_get(input1)),
+                        "__cofhe__ min             ",
+                        "min(",
+                        stringifyCtHash(input1),
                         ", ",
-                        Strings.toString(_get(input2)),
+                        stringifyCtHash(input2),
                         ") => ",
-                        Strings.toString(min)
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, min);
             return;
         }
         if (opIs(operation, FunctionId.max)) {
             uint256 max = _get(input1) > _get(input2)
                 ? _get(input1)
                 : _get(input2);
+            _set(ctHash, max);
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_max",
-                        " (",
-                        Strings.toString(_get(input1)),
+                        "__cofhe__ max             ",
+                        "max(",
+                        stringifyCtHash(input1),
                         ", ",
-                        Strings.toString(_get(input2)),
+                        stringifyCtHash(input2),
                         ") => ",
-                        Strings.toString(max)
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, max);
             return;
         }
         if (opIs(operation, FunctionId.eq)) {
+            _set(ctHash, _get(input1) == _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_eq",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) == _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ eq              ",
+                        stringifyCtHash(input1),
+                        " == ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) == _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.ne)) {
+            _set(ctHash, _get(input1) != _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_ne",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        _get(input1) != _get(input2) ? "1 (true)" : "0 (false)"
+                        "__cofhe__ ne              ",
+                        stringifyCtHash(input1),
+                        " != ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) != _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.rol)) {
+            _set(ctHash, _get(input1) << _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_rol",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) << _get(input2))
+                        "__cofhe__ rol             ",
+                        stringifyCtHash(input1),
+                        " << ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) << _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.ror)) {
+            _set(ctHash, _get(input1) >> _get(input2));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_ror",
-                        " (",
-                        Strings.toString(_get(input1)),
-                        ", ",
-                        Strings.toString(_get(input2)),
-                        ") => ",
-                        Strings.toString(_get(input1) >> _get(input2))
+                        "__cofhe__ ror             ",
+                        stringifyCtHash(input1),
+                        " >> ",
+                        stringifyCtHash(input2),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) >> _get(input2));
             return;
         }
         revert InvalidTwoInputOperation(operation);
@@ -471,37 +563,35 @@ abstract contract MockCoFHE {
         uint256 input3
     ) internal {
         if (opIs(operation, FunctionId.trivialEncrypt)) {
+            _set(ctHash, input1);
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_trivialEncrypt",
-                        " (",
-                        Strings.toString(ctHash),
-                        ") => ",
-                        Strings.toString(input1)
+                        "__cofhe__ trivialEncrypt  ",
+                        Strings.toString(input1),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, input1);
             return;
         }
         if (opIs(operation, FunctionId.select)) {
+            _set(ctHash, _get(input1) == 1 ? _get(input2) : _get(input3));
+
             if (logOps)
                 console.log(
                     string.concat(
-                        "MOCK_select",
-                        " (",
-                        _get(input1) == 1 ? "1 (true)" : "0 (false)",
+                        "__cofhe__ select          ",
+                        stringifyCtHash(input1),
                         " ? ",
-                        Strings.toString(_get(input2)),
+                        stringifyCtHash(input2),
                         " : ",
-                        Strings.toString(_get(input3)),
-                        ") => ",
-                        Strings.toString(
-                            _get(input1) == 1 ? _get(input2) : _get(input3)
-                        )
+                        stringifyCtHash(input3),
+                        " => ",
+                        stringifyCtHash(ctHash)
                     )
                 );
-            _set(ctHash, _get(input1) == 1 ? _get(input2) : _get(input3));
             return;
         }
         revert InvalidThreeInputOperation(operation);

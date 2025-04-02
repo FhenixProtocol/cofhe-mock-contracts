@@ -11,6 +11,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MockCoFHE} from "./MockCoFHE.sol";
 import {ITaskManager, FunctionId, Utils, EncryptedInput} from "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
+import {console} from "hardhat/console.sol";
 
 error DecryptionResultNotReady(uint256 ctHash);
 // Input validation errors
@@ -117,13 +118,19 @@ library TMCommon {
         // Calculate Keccak256 hash
         bytes32 hash = keccak256(combined);
 
-        return
-            appendMetadata(
-                uint256(hash),
-                securityZone,
-                getReturnType(functionId, ctType),
-                isTriviallyEncrypted
-            );
+        // TODO: Trivially encrypted here isn't matching the check in `checkAllowed`
+        // - arcitect 2025-04-02
+
+        uint256 ctHash = appendMetadata(
+            uint256(hash),
+            securityZone,
+            getReturnType(functionId, ctType),
+            isTriviallyEncrypted
+        );
+
+        console.log("Calc key", ctHash, "trivially?", isTriviallyEncrypted);
+
+        return ctHash;
     }
 
     function getByteForTrivialAndType(
@@ -349,6 +356,12 @@ contract TaskManager is ITaskManager, MockCoFHE {
     }
 
     function checkAllowed(uint256 ctHash) internal view {
+        console.log(
+            "checkAllowed",
+            ctHash,
+            "isTriviallyEncryptedFromHash",
+            TMCommon.isTriviallyEncryptedFromHash(ctHash)
+        );
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
             if (!acl.isAllowed(ctHash, msg.sender))
                 revert ACLNotAllowed(ctHash, msg.sender);

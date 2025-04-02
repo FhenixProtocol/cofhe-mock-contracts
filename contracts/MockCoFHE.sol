@@ -4,6 +4,7 @@ pragma solidity >=0.8.25 <0.9.0;
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {FHE} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
 import {FunctionId, Utils} from "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
+import "hardhat/console.sol";
 
 address constant SIGNER_ADDRESS = 0x6E12D8C87503D4287c294f2Fdef96ACd9DFf6bd2;
 uint256 constant SIGNER_PRIVATE_KEY = 49099792800763675079532137679706322989817545357788440619111868498148356080914;
@@ -64,6 +65,7 @@ abstract contract MockCoFHE {
     // Storage functions
 
     function _set(uint256 ctHash, uint256 value) internal {
+        console.log("Mock_set", ctHash, value);
         mockStorage[ctHash] = value;
         inMockStorage[ctHash] = true;
     }
@@ -73,6 +75,7 @@ abstract contract MockCoFHE {
     }
 
     function _get(uint256 ctHash) internal view returns (uint256) {
+        console.log("Mock_get", ctHash, "in storage?", inMockStorage[ctHash]);
         if (!inMockStorage[ctHash]) revert InputNotInMockStorage(ctHash);
         return mockStorage[ctHash];
     }
@@ -95,30 +98,30 @@ abstract contract MockCoFHE {
         uint256 input
     ) internal {
         if (opIs(operation, FunctionId.random)) {
-            // if (logOps) console.log("MOCK_random", ctHash);
+            if (logOps) console.log("MOCK_random", ctHash);
             _set(ctHash, uint256(blockhash(block.number - 1)));
             return;
         }
         if (opIs(operation, FunctionId.cast)) {
-            // if (logOps) console.log("MOCK_cast", ctHash, _get(input));
+            if (logOps) console.log("MOCK_cast", ctHash, _get(input));
             _set(ctHash, _get(input));
             return;
         }
         if (opIs(operation, FunctionId.not)) {
             bool inputIsTruthy = _get(input) == 1;
-            // if (logOps)
-            //     console.log("MOCK_not", ctHash, inputIsTruthy, !inputIsTruthy);
+            if (logOps)
+                console.log("MOCK_not", ctHash, inputIsTruthy, !inputIsTruthy);
             _set(ctHash, !inputIsTruthy);
             return;
         }
         if (opIs(operation, FunctionId.square)) {
-            // if (logOps)
-            //     console.log(
-            //         "MOCK_square",
-            //         ctHash,
-            //         _get(input),
-            //         _get(input) * _get(input)
-            //     );
+            if (logOps)
+                console.log(
+                    "MOCK_square",
+                    ctHash,
+                    _get(input),
+                    _get(input) * _get(input)
+                );
             _set(ctHash, _get(input) * _get(input));
             return;
         }
@@ -132,226 +135,226 @@ abstract contract MockCoFHE {
         uint256 input2
     ) internal {
         if (opIs(operation, FunctionId.sub)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_sub",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) - _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_sub",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) - _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) - _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.add)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_add",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) + _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_add",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) + _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) + _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.xor)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_xor",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) ^ _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_xor",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) ^ _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) ^ _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.and)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_and",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) & _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_and",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) & _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) & _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.or)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_or",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) | _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_or",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) | _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) | _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.div)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_div",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) / _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_div",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) / _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) / _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.rem)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_rem",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) % _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_rem",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) % _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) % _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.mul)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_mul",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) * _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_mul",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) * _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) * _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.shl)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_shl",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) << _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_shl",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) << _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) << _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.shr)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_shr",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) >> _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_shr",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) >> _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) >> _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.gte)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_gte",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) >= _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_gte",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) >= _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) >= _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.lte)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_lte",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) <= _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_lte",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) <= _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) <= _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.lt)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_lt",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) < _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_lt",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) < _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) < _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.gt)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_gt",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) > _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_gt",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) > _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) > _get(input2));
             return;
         }
@@ -359,18 +362,18 @@ abstract contract MockCoFHE {
             uint256 min = _get(input1) < _get(input2)
                 ? _get(input1)
                 : _get(input2);
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_min",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(min)
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_min",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(min)
+                    )
+                );
             _set(ctHash, min);
             return;
         }
@@ -378,82 +381,82 @@ abstract contract MockCoFHE {
             uint256 max = _get(input1) > _get(input2)
                 ? _get(input1)
                 : _get(input2);
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_max",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(max)
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_max",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(max)
+                    )
+                );
             _set(ctHash, max);
             return;
         }
         if (opIs(operation, FunctionId.eq)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_eq",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) == _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_eq",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) == _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) == _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.ne)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_ne",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             _get(input1) != _get(input2) ? "1 (true)" : "0 (false)"
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_ne",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        _get(input1) != _get(input2) ? "1 (true)" : "0 (false)"
+                    )
+                );
             _set(ctHash, _get(input1) != _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.rol)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_rol",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) << _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_rol",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) << _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) << _get(input2));
             return;
         }
         if (opIs(operation, FunctionId.ror)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_ror",
-            //             " (",
-            //             Strings.toString(_get(input1)),
-            //             ", ",
-            //             Strings.toString(_get(input2)),
-            //             ") => ",
-            //             Strings.toString(_get(input1) >> _get(input2))
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_ror",
+                        " (",
+                        Strings.toString(_get(input1)),
+                        ", ",
+                        Strings.toString(_get(input2)),
+                        ") => ",
+                        Strings.toString(_get(input1) >> _get(input2))
+                    )
+                );
             _set(ctHash, _get(input1) >> _get(input2));
             return;
         }
@@ -468,36 +471,36 @@ abstract contract MockCoFHE {
         uint256 input3
     ) internal {
         if (opIs(operation, FunctionId.trivialEncrypt)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_trivialEncrypt",
-            //             " (",
-            //             Strings.toString(ctHash),
-            //             ") => ",
-            //             Strings.toString(input1)
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_trivialEncrypt",
+                        " (",
+                        Strings.toString(ctHash),
+                        ") => ",
+                        Strings.toString(input1)
+                    )
+                );
             _set(ctHash, input1);
             return;
         }
         if (opIs(operation, FunctionId.select)) {
-            // if (logOps)
-            //     console.log(
-            //         string.concat(
-            //             "MOCK_select",
-            //             " (",
-            //             _get(input1) == 1 ? "1 (true)" : "0 (false)",
-            //             " ? ",
-            //             Strings.toString(_get(input2)),
-            //             " : ",
-            //             Strings.toString(_get(input3)),
-            //             ") => ",
-            //             Strings.toString(
-            //                 _get(input1) == 1 ? _get(input2) : _get(input3)
-            //             )
-            //         )
-            //     );
+            if (logOps)
+                console.log(
+                    string.concat(
+                        "MOCK_select",
+                        " (",
+                        _get(input1) == 1 ? "1 (true)" : "0 (false)",
+                        " ? ",
+                        Strings.toString(_get(input2)),
+                        " : ",
+                        Strings.toString(_get(input3)),
+                        ") => ",
+                        Strings.toString(
+                            _get(input1) == 1 ? _get(input2) : _get(input3)
+                        )
+                    )
+                );
             _set(ctHash, _get(input1) == 1 ? _get(input2) : _get(input3));
             return;
         }

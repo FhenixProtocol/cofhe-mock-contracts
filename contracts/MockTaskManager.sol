@@ -38,11 +38,11 @@ error RandomFunctionNotSupported();
 library TMCommon {
     uint256 private constant HASH_MASK_FOR_METADATA =
         type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
-    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff - 1 byte reserved for security zone
+    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff -  1 bytes reserved for security zone
     uint256 private constant UINT_TYPE_MASK = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
     uint256 private constant TRIVIALLY_ENCRYPTED_MASK =
-        (type(uint8).max - UINT_TYPE_MASK) << 8; // 0x8000 - 1 bit reserved for isTriviallyEncrypted
-    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f00 - 7 bits reserved for uint type in the one before last byte
+        type(uint8).max - UINT_TYPE_MASK; //0x80  1 bit reserved for isTriviallyEncrypted
+    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f007 bits reserved for uint type in the one before last byte
 
     function uint256ToBytes32(
         uint256 value
@@ -141,12 +141,14 @@ library TMCommon {
         /// @dev last 7 bits for uintType
 
         return
-            (isTrivial ? TRIVIALLY_ENCRYPTED_MASK : 0) |
-            (uint256(uintType & UINT_TYPE_MASK) << 8);
+            uint256(
+                ((isTrivial ? TRIVIALLY_ENCRYPTED_MASK : 0x00) |
+                    (uintType & UINT_TYPE_MASK))
+            );
     }
 
     /**
-     *      Results format is: keccak256(operands_list, op)[0:29] || is_trivial (1 bit) & ct_type (7 bit) || securityZone
+     *      Results format is: keccak256(operands_list, op)[0:29] || is_trivial (1 bit) & ct_type (7 bit) || securityZone || ct_version
      */
     function appendMetadata(
         uint256 preCtHash,

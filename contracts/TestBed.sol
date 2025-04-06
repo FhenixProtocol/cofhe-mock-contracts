@@ -7,7 +7,7 @@ contract TestBed {
     euint32 public eNumber;
     uint256 public numberHash;
 
-    function exists() public view returns (bool) {
+    function exists() public pure returns (bool) {
         return true;
     }
 

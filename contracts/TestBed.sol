@@ -7,6 +7,10 @@ contract TestBed {
     euint32 public eNumber;
     uint256 public numberHash;
 
+    function exists() public view returns (bool) {
+        return true;
+    }
+
     function setNumber(InEuint32 memory inNumber) public {
         eNumber = FHE.asEuint32(inNumber);
         numberHash = euint32.unwrap(eNumber);

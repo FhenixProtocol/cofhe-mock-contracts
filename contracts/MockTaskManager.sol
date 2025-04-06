@@ -178,7 +178,7 @@ library TMCommon {
     function isTriviallyEncryptedFromHash(
         uint256 hash
     ) internal pure returns (bool) {
-        return (hash & 0x8000) == 0x8000;
+        return (hash & TRIVIALLY_ENCRYPTED_MASK) == TRIVIALLY_ENCRYPTED_MASK;
     }
 }
 

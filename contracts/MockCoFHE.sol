@@ -195,11 +195,11 @@ abstract contract MockCoFHE {
                 string.concat(
                     LOG_PREFIX,
                     LOG_DIVIDER,
-                    operation,
+                    padRight(operation, 16, " "),
                     LOG_DIVIDER,
                     logCtHash(ctHash),
-                    LOG_DIVIDER,
-                    account
+                    " -> ",
+                    Strings.toHexString(account)
                 )
             );
     }
@@ -234,8 +234,12 @@ abstract contract MockCoFHE {
 
     // Mock Log
 
-    function MOCK_logAllow(uint256 ctHash, address account) public {
-        logAllow("allow", ctHash, account);
+    function MOCK_logAllow(
+        string memory operation,
+        uint256 ctHash,
+        address account
+    ) public {
+        logAllow(operation, ctHash, account);
     }
 
     // Mock functions

@@ -644,7 +644,11 @@ contract TaskManager is ITaskManager, MockCoFHE {
             acl.allow(ctHash, account, msg.sender);
 
             // NOTE: MOCK
-            MOCK_CoFHE.MOCK_logAllow("FHE.allow", ctHash, account);
+            MOCK_logAllow(
+                account == msg.sender ? "FHE.allowThis" : "FHE.allow",
+                ctHash,
+                account
+            );
         }
     }
 
@@ -653,7 +657,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
             acl.allowGlobal(ctHash, msg.sender);
 
             // NOTE: MOCK
-            MOCK_CoFHE.MOCK_logAllow("FHE.allowGlobal", ctHash, msg.sender);
+            MOCK_logAllow("FHE.allowGlobal", ctHash, msg.sender);
         }
     }
 
@@ -662,23 +666,18 @@ contract TaskManager is ITaskManager, MockCoFHE {
             acl.allowTransient(ctHash, account, msg.sender);
 
             // NOTE: MOCK
-            MOCK_CoFHE.MOCK_logAllow("FHE.allowTransient", ctHash, account);
+            MOCK_logAllow("FHE.allowTransient", ctHash, account);
         }
     }
 
     function allowForDecryption(uint256 ctHash) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
-            // TODO: ADD LOG HERE
             uint256[] memory hashes = new uint256[](1);
             hashes[0] = ctHash;
             acl.allowForDecryption(hashes, msg.sender);
 
             // NOTE: MOCK
-            MOCK_CoFHE.MOCK_logAllow(
-                "FHE.allowForDecryption",
-                ctHash,
-                msg.sender
-            );
+            MOCK_logAllow("FHE.allowForDecryption", ctHash, msg.sender);
         }
     }
 

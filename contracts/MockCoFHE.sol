@@ -415,7 +415,7 @@ abstract contract MockCoFHE {
                     "max(",
                     logCtHash(input1),
                     ", ",
-                    logCtHash(input2)
+                    logCtHash(input2),
                     ")"
                 ),
                 logCtHash(ctHash)

@@ -185,6 +185,25 @@ abstract contract MockCoFHE {
             );
     }
 
+    function logAllow(
+        string memory operation,
+        uint256 ctHash,
+        address account
+    ) internal {
+        if (logOps)
+            console.log(
+                string.concat(
+                    LOG_PREFIX,
+                    LOG_DIVIDER,
+                    operation,
+                    LOG_DIVIDER,
+                    logCtHash(ctHash),
+                    LOG_DIVIDER,
+                    account
+                )
+            );
+    }
+
     // Storage functions
 
     function _set(uint256 ctHash, uint256 value, bool log) internal {
@@ -211,6 +230,12 @@ abstract contract MockCoFHE {
 
     function MOCK_setInEuintKey(uint256 ctHash, uint256 value) public {
         _set(ctHash, value);
+    }
+
+    // Mock Log
+
+    function MOCK_logAllow(uint256 ctHash, address account) public {
+        logAllow("allow", ctHash, account);
     }
 
     // Mock functions

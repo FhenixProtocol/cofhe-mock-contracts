@@ -144,8 +144,8 @@ abstract contract MockCoFHE {
         return truncated;
     }
 
-    string constant LOG_PREFIX = "[MOCK]";
-    string constant LOG_DIVIDER = " | ";
+    string constant LOG_PREFIX = unicode"├ ";
+    string constant LOG_DIVIDER = unicode" | ";
 
     function padRight(
         string memory input,
@@ -170,12 +170,11 @@ abstract contract MockCoFHE {
         string memory operation,
         string memory inputs,
         string memory output
-    ) internal {
+    ) internal view {
         if (logOps)
             console.log(
                 string.concat(
                     LOG_PREFIX,
-                    LOG_DIVIDER,
                     padRight(operation, 16, " "),
                     LOG_DIVIDER,
                     inputs,
@@ -189,12 +188,11 @@ abstract contract MockCoFHE {
         string memory operation,
         uint256 ctHash,
         address account
-    ) internal {
+    ) internal view {
         if (logOps)
             console.log(
                 string.concat(
                     LOG_PREFIX,
-                    LOG_DIVIDER,
                     padRight(operation, 16, " "),
                     LOG_DIVIDER,
                     logCtHash(ctHash),
@@ -238,7 +236,7 @@ abstract contract MockCoFHE {
         string memory operation,
         uint256 ctHash,
         address account
-    ) public {
+    ) public view {
         logAllow(operation, ctHash, account);
     }
 

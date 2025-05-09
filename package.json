@@ -1,0 +1,39 @@
+{
+	"name": "@fhenixprotocol/cofhe-mock-contracts",
+	"description": "Utility contracts for locally testing CoFHE with mocked FHE primitives locally.",
+	"version": "0.2.1-alpha.0",
+	"author": {
+		"name": "FhenixProtocol",
+		"url": "https://github.com/FhenixProtocol/cofhe-mock-contracts"
+	},
+	"scripts": {
+		"test": "forge test -vvv",
+		"anvil": "anvil --code-size-limit 100000"
+	},
+	"license": "MIT",
+	"files": [
+		"contracts/"
+	],
+	"keywords": [
+		"blockchain",
+		"ethereum",
+		"smart-contracts",
+		"solidity",
+		"FHE",
+		"encryption",
+		"privacy",
+		"coprocessor",
+		"fhenix",
+		"cofhe"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@openzeppelin/contracts": "^5.0.0",
+		"@fhenixprotocol/cofhe-contracts": "0.0.13"
+	},
+	"devDependencies": {
+		"hardhat": "^2.22.19"
+	}
+}

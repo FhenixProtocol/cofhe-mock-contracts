@@ -37,11 +37,11 @@ error RandomFunctionNotSupported();
 library TMCommon {
     uint256 private constant HASH_MASK_FOR_METADATA =
         type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
-    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff -  1 bytes reserved for security zone
+    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff - 1 byte reserved for security zone
     uint256 private constant UINT_TYPE_MASK = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
     uint256 private constant TRIVIALLY_ENCRYPTED_MASK =
-        type(uint8).max - UINT_TYPE_MASK; //0x80  1 bit reserved for isTriviallyEncrypted
-    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f007 bits reserved for uint type in the one before last byte
+        (type(uint8).max - UINT_TYPE_MASK) << 8; // 0x8000 - 1 bit reserved for isTriviallyEncrypted
+    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f00 - 7 bits reserved for uint type in the one before last byte
 
     function uint256ToBytes32(
         uint256 value
@@ -138,10 +138,8 @@ library TMCommon {
         /// @dev last 7 bits for uintType
 
         return
-            uint256(
-                ((isTrivial ? TRIVIALLY_ENCRYPTED_MASK : 0x00) |
-                    (uintType & UINT_TYPE_MASK))
-            );
+            (isTrivial ? TRIVIALLY_ENCRYPTED_MASK : 0) |
+            (uint256(uintType & UINT_TYPE_MASK) << 8);
     }
 
     /**
@@ -154,8 +152,9 @@ library TMCommon {
         bool isTrivial
     ) internal pure returns (uint256 result) {
         result = preCtHash & HASH_MASK_FOR_METADATA;
-        uint256 metadata = (getByteForTrivialAndType(isTrivial, uintType) <<
-            8) | (uint256(uint8(int8(securityZone)))); /// @dev 8 bits for type, 8 bits for securityZone
+        uint256 metadata = (getByteForTrivialAndType(isTrivial, uintType)) |
+            (uint256(uint8(int8(securityZone)))); /// @dev 8 bits for type, 8 bits for securityZone
+
         result = result | metadata;
     }
 

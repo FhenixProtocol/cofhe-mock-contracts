@@ -24,9 +24,13 @@ uint256 constant SIGNER_PRIVATE_KEY = 490997928007636750795321376797063229898175
  */
 abstract contract MockCoFHE {
     // Pulled from TMCommon
-    uint256 constant uintTypeMask = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
-    uint256 constant triviallyEncryptedMask = type(uint8).max - uintTypeMask; //0x80  1 bit reserved for isTriviallyEncrypted
-    uint256 constant shiftedTypeMask = uintTypeMask << 8; // 0x7f007 bits reserved for uint type in the one before last byte
+    uint256 private constant HASH_MASK_FOR_METADATA =
+        type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
+    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff - 1 byte reserved for security zone
+    uint256 private constant UINT_TYPE_MASK = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
+    uint256 private constant TRIVIALLY_ENCRYPTED_MASK =
+        (type(uint8).max - UINT_TYPE_MASK) << 8; // 0x8000 - 1 bit reserved for isTriviallyEncrypted
+    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f00 - 7 bits reserved for uint type in the one before last byte
 
     bool public logOps = true;
 
@@ -49,7 +53,7 @@ abstract contract MockCoFHE {
     // Utils
 
     function getUintTypeFromHash(uint256 hash) internal pure returns (uint8) {
-        return uint8((hash & shiftedTypeMask) >> 8);
+        return uint8((hash & SHIFTED_TYPE_MASK) >> 8);
     }
 
     function getUtypeStringFromHash(

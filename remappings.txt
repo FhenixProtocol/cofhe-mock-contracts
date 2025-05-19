@@ -1,5 +1,4 @@
-@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
-@fhenixprotocol/cofhe-contracts/=lib/cofhe-contracts/contracts/
-erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
-forge-std/=lib/forge-std/src/
-halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/
+forge-std/=node_modules/forge-std/src/
+hardhat/=node_modules/hardhat/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@fhenixprotocol/cofhe-contracts/=node_modules/@fhenixprotocol/cofhe-contracts/

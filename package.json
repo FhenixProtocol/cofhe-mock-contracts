@@ -12,7 +12,7 @@
 	},
 	"license": "MIT",
 	"files": [
-		"contracts/"
+		"/contracts/*.sol"
 	],
 	"keywords": [
 		"blockchain",
@@ -26,14 +26,18 @@
 		"fhenix",
 		"cofhe"
 	],
-	"publishConfig": {
-		"access": "public"
-	},
 	"dependencies": {
+		"@fhenixprotocol/cofhe-contracts": "0.0.13",
 		"@openzeppelin/contracts": "^5.0.0",
-		"@fhenixprotocol/cofhe-contracts": "0.0.13"
+		"@openzeppelin/contracts-upgradeable": "^5.0.0"
+	},
+	"peerDependencies": {
+		"@fhenixprotocol/cofhe-contracts": "0.0.13",
+		"@openzeppelin/contracts": "^5.0.0",
+		"@openzeppelin/contracts-upgradeable": "^5.0.0"
 	},
 	"devDependencies": {
-		"hardhat": "^2.22.19"
+		"hardhat": "^2.22.19",
+		"forge-std": "github:foundry-rs/forge-std"
 	}
 }

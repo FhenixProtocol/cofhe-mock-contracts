@@ -20,11 +20,13 @@ A mock smart contract library for testing CoFHE (Confidential Computing Framewor
 
 ## Installation
 
+npm
 ```bash
-#npm
 npm install @fhenixprotocol/cofhe-mock-contracts
+```
 
-#foundry
+foundry
+```bash
 forge install fhenixprotocol/cofhe-mock-contracts
 ```
 

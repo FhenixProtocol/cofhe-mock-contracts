@@ -4,7 +4,7 @@ pragma solidity >=0.8.25 <0.9.0;
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {FHE} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
 import {FunctionId, Utils} from "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
-import "hardhat/console.sol";
+import {console} from "hardhat/console.sol";
 
 address constant SIGNER_ADDRESS = 0x6E12D8C87503D4287c294f2Fdef96ACd9DFf6bd2;
 uint256 constant SIGNER_PRIVATE_KEY = 49099792800763675079532137679706322989817545357788440619111868498148356080914;

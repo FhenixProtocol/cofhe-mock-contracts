@@ -277,7 +277,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         string memory operation,
         uint256[] memory inputs
     ) private {
-        if (inputs.length == 1) {
+        if (inputs.length == 1 || opIs(operation, FunctionId.cast)) {
             emit TaskCreated(ctHash, operation, inputs[0], 0, 0);
 
             // NOTE: MOCK

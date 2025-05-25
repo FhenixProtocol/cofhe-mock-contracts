@@ -1,7 +1,7 @@
 {
 	"name": "@fhenixprotocol/cofhe-mock-contracts",
 	"description": "Mock Smart Contract Library for the CoFHE with FHE primitives",
-	"version": "0.2.1-alpha.1",
+	"version": "0.2.1-alpha.2",
 	"author": {
 		"name": "FhenixProtocol",
 		"url": "https://github.com/FhenixProtocol/cofhe-mock-contracts"

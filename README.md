@@ -20,8 +20,14 @@ A mock smart contract library for testing CoFHE (Confidential Computing Framewor
 
 ## Installation
 
+npm
 ```bash
 npm install @fhenixprotocol/cofhe-mock-contracts
+```
+
+foundry
+```bash
+forge install fhenixprotocol/cofhe-mock-contracts
 ```
 
 ## Usages and Integrations
@@ -72,3 +78,44 @@ Off-chain decryption is performed by calling the `cofhejs.unseal` function with 
 When interacting with CoFHE this request is routed to the Threshold Network, which will perform the decryption operation, ultimately returning a decrypted result.
 
 When working with the mocks, `cofhejs` will instead query the `MockQueryDecrypter` contract, which will verify the request `permit`, and return the decrypted result.
+
+### Using Foundry
+
+Use abstract CoFheTest contract to automatically deploy all necessary FHE contracts for testing.  
+
+CoFheTest also exposes useful test methods such as 
+- `assertHashValue(euint, uint)` - asserting an encrypted value is equal to an expected plaintext value
+- `createInEuint..(number, user)` - for creating encrypted inputs (8-256bits) for a given user
+
+see `contracts/TestBed.sol` for the original contract
+
+```solidity
+import {Test} from "forge-std/Test.sol";
+import {CoFheTest} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
+...
+contract TestBed is Test, CoFheTest {
+
+  TestBed private testbed;
+
+  address private user = makeAddr("user");
+
+  function setUp() public {
+    // optional ... enable verbose logging for fhe mocks
+    // setLog(true);
+
+    testbed = new TestBed();
+  }
+
+  function testSetNumber() public {
+    uint32 n = 10;
+    InEuint32 memory number = createInEuint32(n, user);
+
+    //must be the user who sends transaction
+    //or else invalid permissions from fhe allow
+    vm.prank(user);
+    testbed.setNumber(number);
+
+    assertHashValue(testbed.eNumber(), n);
+  }
+}
+```

@@ -61,7 +61,9 @@ contract MockQueryDecrypter {
         return uint256(hashed ^ key);
     }
 
-    function testQueryDecrypt(
+    // changed function name from 'testQueryDecrypt'
+    // Foundry was trying to run fuzz tests on it
+    function mockQueryDecrypt(
         uint256 ctHash,
         uint256,
         address issuer

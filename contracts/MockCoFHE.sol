@@ -67,6 +67,19 @@ abstract contract MockCoFHE {
         return "unknown";
     }
 
+    function getUtypeBits(uint256 hash) internal pure returns (uint256) {
+        uint8 inputType = getUintTypeFromHash(hash);
+        if (inputType == Utils.EBOOL_TFHE) return 8;
+        if (inputType == Utils.EUINT8_TFHE) return 8;
+        if (inputType == Utils.EUINT16_TFHE) return 16;
+        if (inputType == Utils.EUINT32_TFHE) return 32;
+        if (inputType == Utils.EUINT64_TFHE) return 64;
+        if (inputType == Utils.EUINT128_TFHE) return 128;
+        if (inputType == Utils.EUINT256_TFHE) return 256;
+        if (inputType == Utils.EADDRESS_TFHE) return 160;
+        return 0;
+    }
+
     function removeFirstLetter(
         string memory str
     ) public pure returns (string memory) {
@@ -212,7 +225,10 @@ abstract contract MockCoFHE {
     }
 
     function _set(uint256 ctHash, uint256 value) internal {
-        _set(ctHash, value, false);
+        uint256 bits = getUtypeBits(ctHash);
+        uint256 mask = (1 << bits) - 1;
+
+        _set(ctHash, value & mask, false);
     }
 
     function _set(uint256 ctHash, bool value) internal {
@@ -221,7 +237,11 @@ abstract contract MockCoFHE {
 
     function _get(uint256 ctHash) internal view returns (uint256) {
         if (!inMockStorage[ctHash]) revert InputNotInMockStorage(ctHash);
-        return mockStorage[ctHash];
+
+        uint256 bits = getUtypeBits(ctHash);
+        uint256 mask = (1 << bits) - 1;
+
+        return mockStorage[ctHash] & mask;
     }
 
     // Public functions

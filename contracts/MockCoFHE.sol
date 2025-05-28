@@ -80,6 +80,13 @@ abstract contract MockCoFHE {
         return 0;
     }
 
+    function getUtypeMask(uint256 hash) internal pure returns (uint256) {
+        uint256 bits = getUtypeBits(hash);
+        unchecked {
+            return (1 << bits) - 1;
+        }
+    }
+
     function removeFirstLetter(
         string memory str
     ) public pure returns (string memory) {
@@ -225,9 +232,7 @@ abstract contract MockCoFHE {
     }
 
     function _set(uint256 ctHash, uint256 value) internal {
-        uint256 bits = getUtypeBits(ctHash);
-        uint256 mask = (1 << bits) - 1;
-
+        uint256 mask = getUtypeMask(ctHash);
         _set(ctHash, value & mask, false);
     }
 
@@ -238,9 +243,7 @@ abstract contract MockCoFHE {
     function _get(uint256 ctHash) internal view returns (uint256) {
         if (!inMockStorage[ctHash]) revert InputNotInMockStorage(ctHash);
 
-        uint256 bits = getUtypeBits(ctHash);
-        uint256 mask = (1 << bits) - 1;
-
+        uint256 mask = getUtypeMask(ctHash);
         return mockStorage[ctHash] & mask;
     }
 

@@ -21,11 +21,13 @@ A mock smart contract library for testing CoFHE (Confidential Computing Framewor
 ## Installation
 
 npm
+
 ```bash
 npm install @fhenixprotocol/cofhe-mock-contracts
 ```
 
 foundry
+
 ```bash
 forge install fhenixprotocol/cofhe-mock-contracts
 ```
@@ -81,9 +83,12 @@ When working with the mocks, `cofhejs` will instead query the `MockQueryDecrypte
 
 ### Using Foundry
 
-Use abstract CoFheTest contract to automatically deploy all necessary FHE contracts for testing.  
+> **Important**: You must set `isolate = true` in your `foundry.toml`. Without this setting, some variables may be used without proper permission checks, which will cause failures on production chains.
 
-CoFheTest also exposes useful test methods such as 
+Use abstract CoFheTest contract to automatically deploy all necessary FHE contracts for testing.
+
+CoFheTest also exposes useful test methods such as
+
 - `assertHashValue(euint, uint)` - asserting an encrypted value is equal to an expected plaintext value
 - `createInEuint..(number, user)` - for creating encrypted inputs (8-256bits) for a given user
 

@@ -19,18 +19,29 @@ jobs:
         node-version: [20.x, 22.x]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: Install Dependencies
         run: pnpm install
+
       - name: Run Tests
         run: pnpm test
+
       - name: Run ESLint
         run: pnpm lint
+
       - name: Run prettier
         run: pnpm prettier-ci

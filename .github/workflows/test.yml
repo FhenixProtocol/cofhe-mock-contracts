@@ -1,0 +1,36 @@
+name: Run Tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      SKIP_LOCAL_ENV: 'true'
+      FHEOS_SECURITY_ZONES: 2
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Run Tests
+        run: pnpm test
+      - name: Run ESLint
+        run: pnpm lint
+      - name: Run prettier
+        run: pnpm prettier-ci

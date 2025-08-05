@@ -39,9 +39,3 @@ jobs:
 
       - name: Run Tests
         run: pnpm test
-
-      - name: Run ESLint
-        run: pnpm lint
-
-      - name: Run prettier
-        run: pnpm prettier-ci

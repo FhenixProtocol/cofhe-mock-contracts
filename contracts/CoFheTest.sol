@@ -159,6 +159,9 @@ abstract contract CoFheTest is Test {
     function assertHashValue(euint128 eValue, uint128 value) public view {
         assertHashValue(euint128.unwrap(eValue), value);
     }
+    function assertHashValue(euint256 eValue, uint256 value) internal view {
+        assertHashValue(euint256.unwrap(eValue), value);
+    }
     function assertHashValue(eaddress eValue, address value) public view {
         assertHashValue(eaddress.unwrap(eValue), uint256(uint160(value)));
     }
@@ -208,6 +211,13 @@ abstract contract CoFheTest is Test {
         assertHashValue(euint128.unwrap(eValue), value, message);
     }
     function assertHashValue(
+        euint256 eValue,
+        uint256 value,
+        string memory message
+    ) internal view {
+        assertHashValue(euint256.unwrap(eValue), value, message);
+    }
+    function assertHashValue(
         eaddress eValue,
         address value,
         string memory message
@@ -217,6 +227,108 @@ abstract contract CoFheTest is Test {
             uint256(uint160(value)),
             message
         );
+    }
+
+    // COMPARISON ASSERTIONS
+
+    /**
+     * @notice              Asserts that the value of an encrypted hash is greater than the given plaintext value.
+     * @param ctHash        Hash of the encrypted value.
+     * @param value         Plaintext value to compare against.
+     */
+    function assertHashGt(uint256 ctHash, uint256 value) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true);
+        assertGt(taskManager.mockStorage(ctHash), value);
+    }
+    function assertHashGt(uint256 ctHash, uint256 value, string memory message) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true, message);
+        assertGt(taskManager.mockStorage(ctHash), value, message);
+    }
+
+    /**
+     * @notice              Asserts that the value of an encrypted hash is greater than or equal to the given plaintext value.
+     * @param ctHash        Hash of the encrypted value.
+     * @param value         Plaintext value to compare against.
+     */
+    function assertHashGte(uint256 ctHash, uint256 value) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true);
+        assertGe(taskManager.mockStorage(ctHash), value);
+    }
+    function assertHashGte(uint256 ctHash, uint256 value, string memory message) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true, message);
+        assertGe(taskManager.mockStorage(ctHash), value, message);
+    }
+
+    /**
+     * @notice              Asserts that the value of an encrypted hash is less than the given plaintext value.
+     * @param ctHash        Hash of the encrypted value.
+     * @param value         Plaintext value to compare against.
+     */
+    function assertHashLt(uint256 ctHash, uint256 value) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true);
+        assertLt(taskManager.mockStorage(ctHash), value);
+    }
+    function assertHashLt(uint256 ctHash, uint256 value, string memory message) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true, message);
+        assertLt(taskManager.mockStorage(ctHash), value, message);
+    }
+
+    /**
+     * @notice              Asserts that the value of an encrypted hash is less than or equal to the given plaintext value.
+     * @param ctHash        Hash of the encrypted value.
+     * @param value         Plaintext value to compare against.
+     */
+    function assertHashLte(uint256 ctHash, uint256 value) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true);
+        assertLe(taskManager.mockStorage(ctHash), value);
+    }
+    function assertHashLte(uint256 ctHash, uint256 value, string memory message) public view {
+        assertEq(taskManager.inMockStorage(ctHash), true, message);
+        assertLe(taskManager.mockStorage(ctHash), value, message);
+    }
+
+    /**
+     * @notice              Asserts that the value of encrypted hash A is greater than encrypted hash B.
+     * @param ctHashA       Hash of the first encrypted value.
+     * @param ctHashB       Hash of the second encrypted value.
+     */
+    function assertHashGtEnc(uint256 ctHashA, uint256 ctHashB) public view {
+        assertEq(taskManager.inMockStorage(ctHashA), true);
+        assertEq(taskManager.inMockStorage(ctHashB), true);
+        assertGt(taskManager.mockStorage(ctHashA), taskManager.mockStorage(ctHashB));
+    }
+
+    /**
+     * @notice              Asserts that the value of encrypted hash A is greater than or equal to encrypted hash B.
+     * @param ctHashA       Hash of the first encrypted value.
+     * @param ctHashB       Hash of the second encrypted value.
+     */
+    function assertHashGteEnc(uint256 ctHashA, uint256 ctHashB) public view {
+        assertEq(taskManager.inMockStorage(ctHashA), true);
+        assertEq(taskManager.inMockStorage(ctHashB), true);
+        assertGe(taskManager.mockStorage(ctHashA), taskManager.mockStorage(ctHashB));
+    }
+
+    /**
+     * @notice              Asserts that the value of encrypted hash A is less than encrypted hash B.
+     * @param ctHashA       Hash of the first encrypted value.
+     * @param ctHashB       Hash of the second encrypted value.
+     */
+    function assertHashLtEnc(uint256 ctHashA, uint256 ctHashB) public view {
+        assertEq(taskManager.inMockStorage(ctHashA), true);
+        assertEq(taskManager.inMockStorage(ctHashB), true);
+        assertLt(taskManager.mockStorage(ctHashA), taskManager.mockStorage(ctHashB));
+    }
+
+    /**
+     * @notice              Asserts that the value of encrypted hash A is less than or equal to encrypted hash B.
+     * @param ctHashA       Hash of the first encrypted value.
+     * @param ctHashB       Hash of the second encrypted value.
+     */
+    function assertHashLteEnc(uint256 ctHashA, uint256 ctHashB) public view {
+        assertEq(taskManager.inMockStorage(ctHashA), true);
+        assertEq(taskManager.inMockStorage(ctHashB), true);
+        assertLe(taskManager.mockStorage(ctHashA), taskManager.mockStorage(ctHashB));
     }
 
     // UTILS

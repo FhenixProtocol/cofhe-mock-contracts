@@ -29,7 +29,7 @@ error OnlyOwnerAllowed(address caller);
 error OnlyAggregatorAllowed(address caller);
 
 // Operation-specific errors
-error RandomFunctionNotSupported();
+// RandomFunctionNotSupported removed: random is now handled by MOCK_unaryOperation
 
 library TMCommon {
     uint256 private constant HASH_MASK_FOR_METADATA =
@@ -274,7 +274,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         string memory operation,
         uint256[] memory inputs
     ) private {
-        if (inputs.length == 1 || opIs(operation, FunctionId.cast)) {
+        if (inputs.length == 1 || opIs(operation, FunctionId.cast) || opIs(operation, FunctionId.random)) {
             emit TaskCreated(ctHash, operation, inputs[0], 0, 0);
 
             // NOTE: MOCK
@@ -540,9 +540,6 @@ contract TaskManager is ITaskManager, MockCoFHE {
         uint256[] memory encryptedHashes,
         uint256[] memory extraInputs
     ) external returns (uint256) {
-        if (funcId == FunctionId.random) {
-            revert RandomFunctionNotSupported();
-        }
         uint256 inputsLength = encryptedHashes.length + extraInputs.length;
         if (inputsLength > 3) {
             revert TooManyInputs(
